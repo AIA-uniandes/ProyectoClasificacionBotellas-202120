@@ -1,0 +1,12 @@
+[app]
+name: Led
+category: Tests
+author: Joe Developer
+icon: icon.png
+desc: TXT app tutorial #1
+url: http://cfw.ftcommunity.de/ftcommunity-TXT/en/programming/python/tutorial-1.html
+exec: led.py
+managed: yes
+uuid: 039571d0-0aa5-11ec-a3ea-0800200c9a66
+version: 1.0
+firmware: 0.9

@@ -1,0 +1,12 @@
+[app]
+name: Band Control
+category: Tests
+author: Juan Camilo Sanchez
+icon: icon.png
+desc: Control interface for the band
+url: http://cfw.ftcommunity.de/ftcommunity-TXT/en/programming/python/tutorial-1.html
+exec: normalControl.py
+managed: yes
+uuid: 191fe5a6-313b-4083-af65-d1ad7fd6d269
+version: 1.0
+firmware: 0.9

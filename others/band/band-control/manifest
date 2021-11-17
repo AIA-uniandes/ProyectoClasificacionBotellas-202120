@@ -1,0 +1,11 @@
+[app]
+name: Band Control
+category: Tests
+author: Joe Developer
+icon: icon.png
+url: http://cfw.ftcommunity.de/ftcommunity-TXT/en/programming/python/tutorial-1.html
+exec: band-control.py
+managed: yes
+uuid: 191fe5a6-313b-4083-af65-d1ad7fd6d284
+version: 1.0
+firmware: 0.9
