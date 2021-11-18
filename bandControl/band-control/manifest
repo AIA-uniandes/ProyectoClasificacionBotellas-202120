@@ -1,0 +1,10 @@
+[app]
+name: Entrance Band
+category: Production
+author: Juan Sanchez
+icon: icon.png
+exec: entranceBand.py
+managed: yes
+uuid: 191fe5a6-313b-4083-af65-d1ad7fd6ffff
+version: 1.0
+firmware: 0.9
