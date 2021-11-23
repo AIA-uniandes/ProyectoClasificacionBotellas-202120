@@ -22,9 +22,7 @@ communication = 0
 newBottle = False
 state = 0
 end = False
-robot
-loop
-bands = []
+bands = set()
 
 
 def lab_to_class(label):
@@ -56,18 +54,26 @@ def commandRobot(orders):
 
 
 def runState():
-    global state, newBottle
+    global state, newBottle,path
+    print('Current Status')
+    print(state)
+    print('Current bottle')
+    print(newBottle)
+    print('Current path')
+    print(path)
     if state == 0:
         newBottle = False
         commandRobot(getBottle)
         state = 1
         print("recording")
         Thread(target=rec.record, args=[os.path.dirname(
-            __file__)+"audioProcess/predictions/pred.wav", 1]).start()
+            path)+"audioProcess/predictions/pred.wav", 1]).start()
+        time.sleep(0.3)    
         commandRobot(kickBottle)
         state = 2
         time.sleep(1.5)
-        result = pred.process()
+        result = pred.process(os.path.dirname(
+            path)+"audioProcess")
         result = 1
         print(lab_to_class(result))
         commandRobot(finalTrayectories[result])
@@ -82,9 +88,11 @@ def setCommunication(protocol):
     global loop
     print('setting communication')
     if protocol == 0:
-        loop = asyncio.get_event_loop().run_until_complete(
-            start_server(HOST_WS, PORT_WS, getSMS))
-
+        l = asyncio.new_event_loop()
+        asyncio.set_event_loop(l)
+        loop = l.run_until_complete(
+            ws.startServer(HOST_WS, PORT_WS, getSMS))
+        l.run_forever()
 
 def checkCommunication():
     while not end:
@@ -100,16 +108,18 @@ def connectRobot(host, port):
 
 
 def main():
-    global communication, state, HOST_R, PORT_R
+    global communication, state, HOST_R, PORT_R,path
+
+    path = __file__
     # get type of communication
     Thread(target=setCommunication, args=[communication]).start()
     Thread(target=checkCommunication).start()
-
-    connectRobot(HOST_R, PORT_R)
+    Thread(target=connectRobot, args=[HOST_R, PORT_R]).start()
 
 
 async def getSMS(websocket, path):
     global newBottle
+    print('new Conection')
     print(path)
     # case to register client
     if path == '/bottle':
@@ -122,3 +132,4 @@ async def getSMS(websocket, path):
                 pass
         finally:
             bands.remove(websocket)
+main()

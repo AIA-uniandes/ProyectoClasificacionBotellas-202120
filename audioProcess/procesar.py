@@ -19,16 +19,16 @@ def cargar_modelo(route):
   loaded= keras.models.load_model(route)
 
   return loaded
-def reduce_noise(file):
+def reduce_noise(file,path):
     form,ratio = get_waveform2(file)
-    base_noise, ratio_noise= get_waveform2("audios/ruido_base.wav")
+    base_noise, ratio_noise= get_waveform2(path+"audios/ruido_base.wav")
     reduced_noise = nr.reduce_noise(y=form.numpy(), sr=ratio.numpy(),y_noise=base_noise,n_std_thresh_stationary=1.5,stationary=False)
     return reduced_noise
 
-def preprocess_predict(file):
+def preprocess_predict(file,path):
     x_batch=None
     wave_predict=get_waveform(file)
-    #wave_predict=reduce_noise(file)
+    wave_predict=reduce_noise(file,path)
     spec=get_spectrogram(wave_predict)
     spec=tf.expand_dims(spec,axis=0)
     x_batch=spec
@@ -73,10 +73,13 @@ def predict(loaded,x_pred):
   print(predicted_lab)
   return predicted_lab
 
-def process():
-  pred_route="predictions/pred.wav"
-  model_route="models_filtered/"
+def process(basePath):
+  pred_route=basePath+"/predictions/pred.wav"
+  model_route=basePath+"/models_unfiltered/modelo.h5"
   modelo= cargar_modelo(model_route)
-  X_prediction= preprocess_predict(pred_route)
+  X_prediction= preprocess_predict(pred_route,path)
   prediction=predict(modelo, X_prediction)
+  print(prediction)
   return prediction
+
+process('audioProcess')

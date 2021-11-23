@@ -17,4 +17,5 @@ def broadcast(msg, clients):
 
 
 def startServer(host, port, callback):
+    print('get server')
     return websockets.serve(callback, host, port)

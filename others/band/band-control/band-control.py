@@ -90,9 +90,9 @@ class TouchGuiApplication(TouchApplication):
     
     def move_band(self):
         if self.dir:
-            bus.write_byte(8, hex(6-self.vel))
+            bus.write_byte(8, 6-self.vel)
         else:
-            bus.write_byte(8, hex(5+self.vel))
+            bus.write_byte(8, 5+self.vel)
 
     def on_timer(self):
         # change saved state to reflect input state
