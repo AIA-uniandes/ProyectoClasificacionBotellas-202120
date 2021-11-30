@@ -17,12 +17,6 @@ import smbus
 bus = smbus.SMBus(1)  # 1 indicates /dev/i2c-1
 
 
-async def connect(host, port):
-    global ws
-    # create the url to connect the server
-    uri = "ws://"+host+":"+port+"/bottle"
-    # Create the websocket
-    ws = await websockets.connect(uri)
 
 
 class TouchGuiApplication(TouchApplication):
@@ -118,18 +112,37 @@ class TouchGuiApplication(TouchApplication):
         # if self.distance > 9 and not self.band_on:
         #     self.band_on = True
         if self.distance < 10 and self.band_on:
+            print("found bottle")
             self.band_on = False
+            time.sleep(0.5)
+            self.turn_on()
             l = asyncio.new_event_loop()
             l.run_until_complete(self.send())
+            time.sleep(1)
+        if self.distance > 9 and not self.band_on:
+            print("empty band")
+            self.band_on = True
         self.turn_on()
+
+
+async def connect(host, port):
+    global ws
+    # create the url to connect the server
+    uri = "ws://"+host+":"+port+"/bottle"
+    # Create the websocket
+    ws = await websockets.connect(uri)
+    async for msg in ws:
+        print(msg)
+        main.band_on = True
+        main.turn_on()
 
 
 def communication():
     l = asyncio.new_event_loop()
     asyncio.set_event_loop(l)
-    l.run_until_complete(connect('157.253.222.28','8765'))
+    l.run_until_complete(connect('157.253.222.102','8765'))
 
 
 if __name__ == "__main__":
     Thread(target=communication).start()
-    TouchGuiApplication(sys.argv)
+    main = TouchGuiApplication(sys.argv)

@@ -7,6 +7,20 @@ def angleToRadian(list):
         list[i] = list[i]*math.pi/180
     return list
 
+goInit = [
+    {
+        'type': 'trayectory',
+        'points': [
+           {
+                'function': 'movej',
+                'time': 8.5,
+                'v': 0.3,
+                'a': 1,
+                'coords': angleToRadian([-28.02, -49.3, 118.83, -71.74, 62.79, 137.68])
+            },
+        ]
+    }
+]
 
 getBottle = [
     {
@@ -16,13 +30,6 @@ getBottle = [
     {
         'type': 'trayectory',
         'points': [
-            {
-                'function': 'movej',
-                'time': 8.5,
-                'v': 0.3,
-                'a': 1,
-                'coords': angleToRadian([-28.02, -49.3, 118.83, -71.74, 62.79, 137.68])
-            },
             {
                 'function': 'movel',
                 'time': 1,
@@ -40,30 +47,45 @@ getBottle = [
         'type': 'trayectory',
         'points': [
             {
-                'function': 'movej',
-                'time': 8.3,
+                'function': 'movel',
+                'time': 1,
                 'v': 0.3,
                 'a': 1,
-                'coords': angleToRadian([-4.62, -64.36, -4.73, 97.36, 95.2, 137.68])
-            },
+                'coords': angleToRadian([-28.02, -49.3, 118.83, -71.74, 62.79, 137.68])
+            }
         ]
     }
 ]
 
-
-kickBottle = [
-
+openTool=[
     {
-        'type': 'record'
+        'type': 'tool',
+        'value': False
     },
+]
+takePosition = [
+    {
+        'type': 'trayectory',
+        'points': [
+            {
+                'function': 'movel',
+                'time': 4.5,
+                'v': 0.3,
+                'a': 1,
+                'coords': angleToRadian([-4.62, -64.36, -4.73, 97.36, 95.2, 137.68])
+            }
+        ]
+    }
+]
+kickBottle = [
     {
         'type': 'trayectory',
         'points': [
             {
                 'function': 'movej',
                 'time': 4,
-                'v': 3.7,
-                'a': 1.5,
+                'v': 4,
+                'a': 2,
                 'coords': angleToRadian([-285, -64.36, -4.73, 97.36, 95.2, 137.68])
             },
         ]
@@ -124,7 +146,7 @@ getBack = [
                     },
                     {
                         'function': 'movej',
-                        'time': 18.5,
+                        'time': 7,
                         'v': 1,
                         'a': 1,
                         'coords': angleToRadian([-28.02, -49.3, 118.83, -71.74, 62.79, 137.68])

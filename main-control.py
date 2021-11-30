@@ -7,7 +7,7 @@ import time
 import socket
 from robotMove.robotControl import *
 import audioProcess.grabar as rec
-import audioProcess.procesar as pred
+# import audioProcess.procesar as pred
 # IOT Protocols
 import communication.ws as ws
 
@@ -39,47 +39,45 @@ def commandRobot(orders):
             for p in ele['points']:
                 com = ("%s(%s, a=%s, v=%s)" % (
                     p['function'], p['coords'], p['a'], p['v']) + "\n").encode("utf8")
-                print(com)
+                # print(com)
                 robot.send(com)
                 time.sleep(p['time'])
         elif ele['type'] == 'tool':
             com = ("set_digital_out(8,%s)" %
                    ele['value'] + "\n").encode("utf8")
-            print(com)
+            # print(com)
             robot.send(com)
             time.sleep(1.5)
-        elif ele['type'] == 'record':
-            print("recording")
-            # Thread(target=rec.record, args=[os.path.dirname(__file__)+"audioProcess/predictions/pred.wav",1]).start()
-
+        
 
 def runState():
-    global state, newBottle,path
-    print('Current Status')
-    print(state)
+    global state, newBottle,path,bands
     print('Current bottle')
     print(newBottle)
-    print('Current path')
-    print(path)
     if state == 0:
+        state = 1
         newBottle = False
         commandRobot(getBottle)
-        state = 1
+        state = 2
+        commandRobot(takePosition)
         print("recording")
         Thread(target=rec.record, args=[os.path.dirname(
             path)+"audioProcess/predictions/pred.wav", 1]).start()
         time.sleep(0.3)    
         commandRobot(kickBottle)
-        state = 2
+        state = 3
         time.sleep(1.5)
-        result = pred.process(os.path.dirname(
-            path)+"audioProcess")
+        # result = pred.process(os.path.dirname(
+        #     path)+"audioProcess")
         result = 1
         print(lab_to_class(result))
         commandRobot(finalTrayectories[result])
-        state = 3
+        state = 4
+        commandRobot(openTool)
         commandRobot(getBack)
         state = 0
+        print("finish have botte")
+        print(newBottle)
         if newBottle:
             runState()
 
@@ -105,6 +103,8 @@ def connectRobot(host, port):
     robot = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     robot.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     robot.connect((host, port))
+    commandRobot(goInit)
+
 
 
 def main():
@@ -112,13 +112,13 @@ def main():
 
     path = __file__
     # get type of communication
+    connectRobot(HOST_R, PORT_R)
     Thread(target=setCommunication, args=[communication]).start()
     Thread(target=checkCommunication).start()
-    Thread(target=connectRobot, args=[HOST_R, PORT_R]).start()
 
 
 async def getSMS(websocket, path):
-    global newBottle
+    global newBottle, bands, state
     print('new Conection')
     print(path)
     # case to register client
@@ -127,8 +127,9 @@ async def getSMS(websocket, path):
         try:
             async for msg in websocket:
                 print(msg)
-                newBottle = True
-                runState()
+                if not state ==1:
+                    newBottle = True
+                    Thread(target=runState).start()
                 pass
         finally:
             bands.remove(websocket)

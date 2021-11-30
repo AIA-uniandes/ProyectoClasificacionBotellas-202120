@@ -11,9 +11,9 @@ async def connect(host, port):
 # Server
 
 
-def broadcast(msg, clients):
+async def broadcast(msg, clients):
     for ws in clients:
-        ws.send(msg)
+        await ws.send(msg)
 
 
 def startServer(host, port, callback):
