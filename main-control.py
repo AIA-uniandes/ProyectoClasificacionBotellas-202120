@@ -11,6 +11,9 @@ import audioProcess.grabar as rec
 # IOT Protocols
 import communication.ws as ws
 
+import urllib.request
+import json
+
 # constants
 HOST_R = "157.253.197.6"    #
 PORT_R = 30002
@@ -23,7 +26,11 @@ newBottle = False
 state = 0
 end = False
 bands = set()
-
+settings={
+    'Estado':'On',
+    'Protocolo_actual':'MQTT'
+}
+newUpdate=False
 
 def lab_to_class(label):
     if label == 1:
@@ -83,17 +90,30 @@ def runState():
 
 
 def setCommunication(protocol):
-    global loop
+    global loop, wsServer
     print('setting communication')
     if protocol == 0:
         l = asyncio.new_event_loop()
         asyncio.set_event_loop(l)
-        loop = l.run_until_complete(
+        loop=l
+        wsServer = l.run_until_complete(
             ws.startServer(HOST_WS, PORT_WS, getSMS))
         l.run_forever()
 
 def checkCommunication():
+    global loop, bands
     while not end:
+        c = urllib.request.urlopen("https://us-east-1.aws.webhooks.mongodb-realm.com/api/client/v2.0/app/tesis-app-zayvx/service/Control/incoming_webhook/control").read()
+        # c='[{\"_id\":\"617c297ebd1ea69c6b80d218\",\"opcion1\":\"Turn On\",\"opcion2\":\"Turn Off\",\"Estado\":\"On\",\"Protocolo_actual\":\"MQTT\",\"protocolo1\":\"MQTT\",\"protocolo2\":\"WEB SOCKETS\",\"protocolo3\":\"COAP\"}]'
+        c=json.loads(c)
+        contents=json.loads(c)
+        if not contents[0]['Estado'] == settings['Estado'] or not contents[0]['Protocolo_actual'] == settings['Protocolo_actual']:
+            print("change")
+            print(loop)
+            print(contents[0])
+            loop.call_soon_threadsafe(ws.broadcast,'change',bands)
+            settings['Estado']= contents[0]['Estado']
+            settings['Protocolo_actual']= contents[0]['Protocolo_actual']
         time.sleep(30)
 
 
@@ -112,18 +132,20 @@ def main():
 
     path = __file__
     # get type of communication
-    connectRobot(HOST_R, PORT_R)
+    # connectRobot(HOST_R, PORT_R)
     Thread(target=setCommunication, args=[communication]).start()
     Thread(target=checkCommunication).start()
 
 
 async def getSMS(websocket, path):
     global newBottle, bands, state
+    Thread(target=checkCommunication).start()
     print('new Conection')
     print(path)
     # case to register client
     if path == '/bottle':
         bands.add(websocket)
+        print(type(websocket))
         try:
             async for msg in websocket:
                 print(msg)

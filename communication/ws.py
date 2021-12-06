@@ -1,6 +1,5 @@
 import websockets
-import asyncio
-# Client
+import time
 
 
 async def connect(host, port):
