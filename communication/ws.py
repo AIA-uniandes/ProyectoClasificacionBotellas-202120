@@ -1,5 +1,6 @@
 import websockets
 import time
+import paho.mqtt.client as mqtt
 
 
 async def connect(host, port):

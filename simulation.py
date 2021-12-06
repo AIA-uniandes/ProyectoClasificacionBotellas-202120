@@ -1,33 +1,55 @@
 import asyncio
 import websockets
+import paho.mqtt.publish as publish
+from aiocoap import *
 import time
 import json
 from threading import Thread
 
-a=[5,6,7]
-async def ticker():
-    """Yield numbers from 0 to `to` every `delay` seconds."""
-    while 1: 
-        if len(a):
-            yield a.pop(0)
-        time.sleep(1)
+host = "localhost"
 
 
 async def connect():
-    global current, initial
-    #create the url to connect the server
-    uri = "ws://localhost:8765/bottle"
-    #Create the websocket
+    global current, initial, ws
+    # create the url to connect the server
+    uri = "ws://"+host+":8765/bottle"
+    # Create the websocket
     ws = await websockets.connect(uri)
-    #First message to register the client 
-    # await ws.send('hola')
-    # print("waiting")
     async for msg in ws:
-       print(msg)
-
-async def test():
-    async for msg in ticker():
         print(msg)
+
+
+async def sendWS(data):
+    global ws
+    await ws.send(data)
+
+
+async def sendCoap(data):
+
+    context = await Context.create_client_context()
+    request = Message(code=PUT, payload=data, uri="coap://"+host+"/bottle")
+
+    response = await context.request(request).response
+
+    print('Result: %s\n%r' % (response.code, response.payload))
+
+
+def test(protocol):
+    data = {
+        'time': int(round(time.time() * 1000)),
+        'data': "llego botella"
+    }
+    # pass to json
+    data = json.dumps(data)
+    while True:
+        if protocol == 0:
+            asyncio.run(sendWS(data))
+        elif protocol == 1:
+            publish.single("bottle", data, hostname=host, port=1884)
+        elif protocol == 2:
+            asyncio.run(sendCOAP(data))
+        time.sleep(2)
+
 
 def runAsync():
     l = asyncio.new_event_loop()
@@ -37,3 +59,4 @@ def runAsync():
 
 Thread(target=runAsync).start()
 time.sleep(2)
+test(0)
