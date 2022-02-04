@@ -24,11 +24,11 @@ HOST_R = "157.253.197.6"    #
 PORT_R = 30002
 HOST_WS = ""
 PORT_WS = "8765"
-HOST_MQTT = ""
-PORT_MQTT = "1884"
+HOST_MQTT = "localhost"
+PORT_MQTT = 1884
 
 
-communication = 0
+communication = 2
 newBottle = False
 state = 0
 end = False
@@ -110,7 +110,7 @@ def setCommunication(protocol):
     elif protocol == 1:
         mqtt.connect(HOST_MQTT, PORT_MQTT, getMsgMQTT)
     elif protocol == 2:
-        coap.server(msgCOAP)
+        asyncio.run(coap.server(msgCOAP))
 
 
 def checkCommunication():
@@ -167,7 +167,7 @@ async def getMsgWS(websocket, path):
 
 
 def getMsgMQTT(client, userdata, msg):
-    processMessage(msg)
+    processMessage(msg.payload.decode("utf-8"))
 
 
 class msgCOAP(resource.Resource):
@@ -178,10 +178,9 @@ class msgCOAP(resource.Resource):
 
 def processMessage(msg):
     global newBottle, state, bands
-    print(msg)
     millis = int(round(time.time() * 1000))
     # extrae la informacion del mensaje
-    data = json.loads(msg.payload.decode("utf-8"))
+    data = json.loads(msg)
     print('time: '+str(millis-data['time']))
     print(data)
     if not state == 1:

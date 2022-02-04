@@ -24,27 +24,28 @@ async def sendWS(data):
     await ws.send(data)
 
 
-async def sendCoap(data):
+async def sendCOAP(data):
 
     context = await Context.create_client_context()
     request = Message(code=PUT, payload=data, uri="coap://"+host+"/bottle")
 
-    response = await context.request(request).response
+    # response = await context.request(request).response
 
-    print('Result: %s\n%r' % (response.code, response.payload))
+    # print('Result: %s\n%r' % (response.code, response.payload))
 
 
 def test(protocol):
-    data = {
-        'time': int(round(time.time() * 1000)),
-        'data': "llego botella"
-    }
-    # pass to json
-    data = json.dumps(data)
     while True:
+        data = {
+            'time': int(round(time.time() * 1000)),
+            'data': "llego botella"
+        }
+        # pass to json
+        data = json.dumps(data)
         if protocol == 0:
             asyncio.run(sendWS(data))
         elif protocol == 1:
+            print("posting MQTT")
             publish.single("bottle", data, hostname=host, port=1884)
         elif protocol == 2:
             asyncio.run(sendCOAP(data))
@@ -57,6 +58,6 @@ def runAsync():
     l.run_until_complete(connect())
 
 
-Thread(target=runAsync).start()
+# Thread(target=runAsync).start()
 time.sleep(2)
-test(0)
+test(2)
